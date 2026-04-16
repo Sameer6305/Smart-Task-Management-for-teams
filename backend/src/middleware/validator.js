@@ -50,17 +50,21 @@ const validate = (req, res, next) => {
     const errors = validationResult(req)
 
     if (!errors.isEmpty()) {
+      console.log("VALIDATION ERROR:", req.body, errors.array());
       return res.status(400).json({
         errors: errors.array().map((error) => ({
           field: error.path,
           message: error.msg,
         })),
+        error: "Validation failed - " + errors.array().map(e => e.msg).join(', ')
       })
     }
 
     return next()
   } catch (error) {
+    console.error("VALIDATOR CATCH ERROR:", error);
     return res.status(400).json({
+      error: 'Validation failed',
       errors: [{ field: 'request', message: 'Validation failed' }],
     })
   }

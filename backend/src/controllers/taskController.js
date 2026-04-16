@@ -2,13 +2,14 @@ const Task = require('../models/Task')
 
 exports.createTask = async (req, res) => {
   try {
+    console.log("REQ BODY:", req.body);
     const userId = req.user.id
     const task = await Task.create(userId, req.body)
 
     return res.status(201).json({ task })
-  } catch (error) {
-    console.error("TASK ERROR:", error.message);
-    return res.status(500).json({ message: 'Server error' })
+  } catch (err) {
+    console.error("TASK ERROR:", err);
+    return res.status(400).json({ error: err.message })
   }
 }
 
