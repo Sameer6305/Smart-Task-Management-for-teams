@@ -2,12 +2,12 @@ const Task = require('../models/Task')
 
 exports.createTask = async (req, res) => {
   try {
-    const tableInfo = await require('../config/db').pool.query(
-      "SELECT column_name FROM information_schema.columns WHERE table_name = 'tasks'"
-    );
-    console.log("DB TASKS COLUMNS:", tableInfo.rows.map(r => r.column_name).join(', '));
     console.log("REQ BODY:", req.body);
+    console.log("USER:", req.user);
     
+    if (!req.user || !req.user.id) {
+       return res.status(401).json({ error: "Unauthorized: Missing user payload" });
+    }
     const userId = req.user.id
     const task = await Task.create(userId, req.body)
 

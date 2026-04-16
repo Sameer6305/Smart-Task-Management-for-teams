@@ -27,22 +27,6 @@ const taskValidation = [
     .withMessage('Task title is required')
     .isLength({ min: 3, max: 200 })
     .withMessage('Task title must be between 3 and 200 characters'),
-  check('description')
-    .optional({ nullable: true, checkFalsy: true })
-    .isLength({ max: 1000 })
-    .withMessage('Description must be at most 1000 characters'),
-  check('status')
-    .optional({ nullable: true })
-    .isIn(['pending', 'in_progress', 'completed'])
-    .withMessage('Status must be one of pending, in_progress, completed'),
-  check('priority')
-    .optional({ nullable: true })
-    .isIn(['low', 'medium', 'high'])
-    .withMessage('Priority must be one of low, medium, high'),
-  check('due_date')
-    .optional({ nullable: true, checkFalsy: true })
-    .isISO8601()
-    .withMessage('Due date must be a valid date'),
 ]
 
 const validate = (req, res, next) => {

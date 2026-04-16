@@ -4,10 +4,13 @@ class Task {
   static async create(userId, taskData) {
     try {
       const title = taskData.title;
-      const description = taskData.description;
-      const status = taskData.status || 'pending';
+      const description = taskData.description || null;
+      let status = taskData.status || 'todo';
+      if (status === 'pending') status = 'todo';
+      if (status === 'completed') status = 'done';
+      
       const priority = taskData.priority || 'medium';
-      const due_date = taskData.due_date || taskData.dueDate;
+      const due_date = taskData.due_date || taskData.dueDate || null;
 
       const result = await pool.query(
         `INSERT INTO tasks 
