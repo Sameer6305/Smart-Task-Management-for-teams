@@ -166,8 +166,8 @@ export const tasksAPI = {
     const payload = {
       title: taskData.title,
       description: taskData.description || '',
-      status: taskData.status || 'pending',
-      priority: taskData.priority || 'medium',
+      status: (taskData.status || 'pending').toLowerCase().replace(" ", "_"),
+      priority: (taskData.priority || 'medium').toLowerCase(),
       due_date: taskData.dueDate || taskData.due_date ? new Date(taskData.dueDate || taskData.due_date).toISOString() : null,
     }
     
@@ -177,7 +177,8 @@ export const tasksAPI = {
     try {
       const response = await api.post('/tasks', payload, {
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
         }
       })
       return response.data

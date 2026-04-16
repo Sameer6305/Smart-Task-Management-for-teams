@@ -10,10 +10,10 @@ class Task {
       const dueDate = taskData.due_date || taskData.dueDate || null;
 
       const result = await pool.query(
-        `INSERT INTO tasks (user_id, title, description, status, priority, due_date)
+        `INSERT INTO tasks (title, description, status, priority, due_date, user_id)
          VALUES ($1, $2, $3, $4, $5, $6)
          RETURNING id, user_id, title, description, status, priority, due_date, created_at, updated_at`,
-        [userId, title, description, status, priority, dueDate],
+        [title, description, status, priority, dueDate, userId],
       )
 
       return result.rows[0]
