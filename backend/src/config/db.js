@@ -1,21 +1,22 @@
 const { Pool } = require('pg');
-require('dotenv').config();
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  ssl: {
+    rejectUnauthorized: false, // Required for Neon/Render SSL connections
+  },
 });
 
-pool.on('connect', () => {
-  console.log('Connected to PostgreSQL');
-});
-
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err);
-  process.exit(-1);
-});
+async function connectDB() {
+  try {
+    const client = await pool.connect();
+    console.log("Connected to PostgreSQL");
+    client.release();
+  } catch (err) {
+    console.error("DB connection error:", err.message);
+    process.exit(1);
+  }
+}
 
 // ✅ Correct query function (NO recursion)
 const query = (text, params) => {
@@ -25,4 +26,5 @@ const query = (text, params) => {
 module.exports = {
   pool,
   query,
+  connectDB,
 };
