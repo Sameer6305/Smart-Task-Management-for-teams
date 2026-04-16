@@ -4,17 +4,25 @@ class Task {
   static async create(userId, taskData) {
     try {
       const title = taskData.title;
-      const description = taskData.description || '';
+      const description = taskData.description;
       const status = taskData.status || 'pending';
       const priority = taskData.priority || 'medium';
-      const dueDate = taskData.due_date || taskData.dueDate || null;
+      const due_date = taskData.due_date || taskData.dueDate;
 
       const result = await pool.query(
-        `INSERT INTO tasks (title, description, status, priority, due_date, user_id)
-         VALUES ($1, $2, $3, $4, $5, $6)
-         RETURNING id, user_id, title, description, status, priority, due_date, created_at, updated_at`,
-        [title, description, status, priority, dueDate, userId],
-      )
+        `INSERT INTO tasks 
+         (title, description, status, priority, due_date, user_id) 
+         VALUES ($1, $2, $3, $4, $5, $6) 
+         RETURNING *`,
+        [
+          title,
+          description || null,
+          status,
+          priority,
+          due_date || null,
+          userId, // from JWT
+        ]
+      );
 
       return result.rows[0]
     } catch (error) {
