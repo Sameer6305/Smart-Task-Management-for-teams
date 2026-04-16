@@ -1,7 +1,6 @@
 require('dotenv').config()
 
-console.log("[ENV] NODE_ENV:", process.env.NODE_ENV);
-console.log("[ENV] DATABASE_URL present:", !!process.env.DATABASE_URL);
+console.log("ENV CHECK:", process.env.DATABASE_URL ? "FOUND" : "MISSING");
 
 const express = require('express')
 const cors = require('cors')
