@@ -1,0 +1,71 @@
+const { check, validationResult } = require('express-validator')
+
+const registerValidation = [
+  check('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+  check('password')
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters')
+    .matches(/^(?=.*[A-Za-z])(?=.*\d).+$/)
+    .withMessage('Password must contain at least one letter and one number'),
+  check('name')
+    .trim()
+    .notEmpty()
+    .withMessage('Name is required')
+    .isLength({ min: 2 })
+    .withMessage('Name must be at least 2 characters'),
+]
+
+const loginValidation = [
+  check('email').isEmail().withMessage('Valid email is required'),
+  check('password').notEmpty().withMessage('Password is required'),
+]
+
+const taskValidation = [
+  check('title')
+    .trim()
+    .notEmpty()
+    .withMessage('Task title is required')
+    .isLength({ min: 3, max: 200 })
+    .withMessage('Task title must be between 3 and 200 characters'),
+  check('description')
+    .optional()
+    .isLength({ max: 1000 })
+    .withMessage('Description must be at most 1000 characters'),
+  check('status')
+    .optional()
+    .isIn(['pending', 'in_progress', 'completed'])
+    .withMessage('Status must be one of pending, in_progress, completed'),
+  check('priority')
+    .optional()
+    .isIn(['low', 'medium', 'high'])
+    .withMessage('Priority must be one of low, medium, high'),
+  check('due_date').optional().isISO8601().withMessage('Due date must be a valid date'),
+]
+
+const validate = (req, res, next) => {
+  try {
+    const errors = validationResult(req)
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        errors: errors.array().map((error) => ({
+          field: error.path,
+          message: error.msg,
+        })),
+      })
+    }
+
+    return next()
+  } catch (error) {
+    return res.status(400).json({
+      errors: [{ field: 'request', message: 'Validation failed' }],
+    })
+  }
+}
+
+module.exports = {
+  registerValidation,
+  loginValidation,
+  taskValidation,
+  validate,
+}

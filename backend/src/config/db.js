@@ -1,34 +1,30 @@
+require('dotenv').config()
 const { Pool } = require('pg')
-const env = require('./env')
 
 const pool = new Pool({
-  connectionString: env.databaseUrl,
+  connectionString: process.env.DATABASE_URL,
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
 })
 
-const initDb = async () => {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      name VARCHAR(100) NOT NULL,
-      email VARCHAR(120) UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT NOW()
-    )
-  `)
+// Handle connection errors
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle client', err)
+})
 
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS tasks (
-      id SERIAL PRIMARY KEY,
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      title VARCHAR(255) NOT NULL,
-      status VARCHAR(30) NOT NULL DEFAULT 'todo',
-      created_at TIMESTAMP DEFAULT NOW()
-    )
-  `)
+// Test database connection
+const testConnection = async () => {
+  try {
+    const result = await pool.query('SELECT NOW()')
+    console.log('Database connection successful')
+    return true
+  } catch (error) {
+    console.error('Database connection failed:', error.message)
+    return false
+  }
 }
 
-module.exports = {
-  pool,
-  query: (text, params) => pool.query(text, params),
-  initDb,
-}
+module.exports = pool
+module.exports.query = (text, params) => pool.query(text, params)
+module.exports.testConnection = testConnection
