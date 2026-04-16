@@ -183,7 +183,7 @@ export const tasksAPI = {
       })
       return response.data
     } catch (error) {
-      console.log("ERROR RESPONSE:", error.originalError?.response?.data || error.response?.data)
+      console.log("ERROR RESPONSE:", error.response?.data);
       throw error
     }
   },

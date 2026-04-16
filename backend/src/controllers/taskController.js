@@ -2,14 +2,19 @@ const Task = require('../models/Task')
 
 exports.createTask = async (req, res) => {
   try {
+    const tableInfo = await require('../config/db').pool.query(
+      "SELECT column_name FROM information_schema.columns WHERE table_name = 'tasks'"
+    );
+    console.log("DB TASKS COLUMNS:", tableInfo.rows.map(r => r.column_name).join(', '));
     console.log("REQ BODY:", req.body);
+    
     const userId = req.user.id
     const task = await Task.create(userId, req.body)
 
     return res.status(201).json({ task })
   } catch (err) {
     console.error("TASK ERROR:", err);
-    return res.status(400).json({ error: err.message })
+    return res.status(400).json({ error: err.message, details: err })
   }
 }
 
