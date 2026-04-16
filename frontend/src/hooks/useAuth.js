@@ -1,4 +1,4 @@
-import { createContext, createElement, useContext, useMemo, useState } from 'react'
+import { createContext, createElement, useContext, useEffect, useMemo, useState } from 'react'
 import { authService } from '../services/authService'
 import { storage } from '../utils/storage'
 
@@ -7,7 +7,15 @@ const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(storage.getUser())
   const [token, setToken] = useState(storage.getToken())
-  const [loading, setLoading] = useState(false)
+  const [loading,      setLoading]      = useState(false)
+  const [initialising, setInitialising] = useState(true)
+
+  // Resolve the initial auth check synchronously on first mount.
+  // Using useEffect ensures React has committed before we flip the flag,
+  // preventing a flicker-redirect on protected routes.
+  useEffect(() => {
+    setInitialising(false)
+  }, [])
 
   const persistAuth = (payload) => {
     storage.setToken(payload.token)
@@ -49,12 +57,13 @@ export function AuthProvider({ children }) {
       user,
       token,
       loading,
+      initialising,
       isAuthenticated: Boolean(token),
       login,
       register,
       logout,
     }),
-    [user, token, loading],
+    [user, token, loading, initialising],
   )
 
   return createElement(AuthContext.Provider, { value }, children)
