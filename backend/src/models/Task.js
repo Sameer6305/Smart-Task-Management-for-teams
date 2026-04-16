@@ -1,13 +1,19 @@
 const pool = require('../config/db')
 
 class Task {
-  static async create(userId, { title, description, status = 'pending', priority = 'medium', dueDate }) {
+  static async create(userId, taskData) {
     try {
+      const title = taskData.title;
+      const description = taskData.description || '';
+      const status = taskData.status || 'pending';
+      const priority = taskData.priority || 'medium';
+      const dueDate = taskData.due_date || taskData.dueDate || null;
+
       const result = await pool.query(
         `INSERT INTO tasks (user_id, title, description, status, priority, due_date)
          VALUES ($1, $2, $3, $4, $5, $6)
          RETURNING id, user_id, title, description, status, priority, due_date, created_at, updated_at`,
-        [userId, title, description, status, priority, dueDate || null],
+        [userId, title, description, status, priority, dueDate],
       )
 
       return result.rows[0]

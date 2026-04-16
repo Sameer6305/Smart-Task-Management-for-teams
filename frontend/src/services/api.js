@@ -162,8 +162,30 @@ export const tasksAPI = {
    * @param {object} taskData
    * @returns {Promise<{ task: object }>}
    */
-  create: (taskData) =>
-    unwrap(api.post('/tasks', taskData)),
+  create: async (taskData) => {
+    const payload = {
+      title: taskData.title,
+      description: taskData.description || '',
+      status: taskData.status || 'pending',
+      priority: taskData.priority || 'medium',
+      due_date: taskData.dueDate || taskData.due_date ? new Date(taskData.dueDate || taskData.due_date).toISOString() : null,
+    }
+    
+    console.log("TASK PAYLOAD:", payload)
+    const token = storage.getToken()
+
+    try {
+      const response = await api.post('/tasks', payload, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      return response.data
+    } catch (error) {
+      console.log("ERROR RESPONSE:", error.originalError?.response?.data || error.response?.data)
+      throw error
+    }
+  },
 
   /**
    * Fetch a single task by ID.
