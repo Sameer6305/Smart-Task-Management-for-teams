@@ -34,8 +34,21 @@ app.use(
 app.use('/api/auth', authRoutes)
 app.use('/api/tasks', taskRoutes)
 
-app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' })
+const path = require('path')
+
+app.use((req, res, next) => {
+  if (req.originalUrl.startsWith('/api')) {
+    res.status(404).json({ message: 'Route not found' })
+  } else {
+    next()
+  }
+})
+
+// Serve frontend in production or if dist exists
+app.use(express.static(path.join(__dirname, '../../frontend/dist')))
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'))
 })
 
 app.use((err, req, res, next) => {

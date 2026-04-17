@@ -165,7 +165,8 @@ export default function DashboardPage() {
   const loadStats = useCallback(async () => {
     setStatsLoad(true)
     try {
-      const data = await taskService.getStatistics()
+      const response = await taskService.getStatistics()
+      const data = response.statistics || response
       setStats({
         total: data.total ?? 0,
         pending: data.pending ?? 0,

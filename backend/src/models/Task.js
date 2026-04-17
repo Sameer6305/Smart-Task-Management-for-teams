@@ -1,6 +1,13 @@
 const pool = require('../config/db')
 
 class Task {
+  static _mapTask(row) {
+    if (!row) return row;
+    if (row.status === 'todo') row.status = 'pending';
+    if (row.status === 'done') row.status = 'completed';
+    return row;
+  }
+
   static async create(userId, taskData) {
     try {
       const title = taskData.title;
@@ -27,7 +34,7 @@ class Task {
         ]
       );
 
-      return result.rows[0]
+      return Task._mapTask(result.rows[0])
     } catch (error) {
       throw error
     }
@@ -44,7 +51,7 @@ class Task {
         [id],
       )
 
-      return result.rows[0] || null
+      return Task._mapTask(result.rows[0] || null)
     } catch (error) {
       throw error
     }
@@ -57,8 +64,11 @@ class Task {
       let paramIndex = 2
 
       if (status) {
+        let sc = status
+        if (sc === 'pending') sc = 'todo'
+        if (sc === 'completed') sc = 'done'
         whereClause += ` AND t.status = $${paramIndex}`
-        params.push(status)
+        params.push(sc)
         paramIndex++
       }
 
@@ -88,7 +98,7 @@ class Task {
       const tasksResult = await pool.query(tasksQuery, params)
 
       return {
-        tasks: tasksResult.rows,
+        tasks: tasksResult.rows.map(Task._mapTask),
         total: total,
       }
     } catch (error) {
@@ -103,8 +113,11 @@ class Task {
       let paramIndex = 1
 
       if (status) {
+        let sc = status
+        if (sc === 'pending') sc = 'todo'
+        if (sc === 'completed') sc = 'done'
         whereClause += `t.status = $${paramIndex}`
-        params.push(status)
+        params.push(sc)
         paramIndex++
       }
 
@@ -138,7 +151,7 @@ class Task {
       const tasksResult = await pool.query(tasksQuery, params)
 
       return {
-        tasks: tasksResult.rows,
+        tasks: tasksResult.rows.map(Task._mapTask),
         total: total,
       }
     } catch (error) {
@@ -155,6 +168,11 @@ class Task {
         if (field in updates) {
           if (field === 'dueDate') {
             updateFields['due_date'] = updates[field]
+          } else if (field === 'status') {
+            let sc = updates[field]
+            if (sc === 'pending') sc = 'todo'
+            if (sc === 'completed') sc = 'done'
+            updateFields[field] = sc
           } else {
             updateFields[field] = updates[field]
           }
@@ -167,7 +185,7 @@ class Task {
            FROM tasks WHERE id = $1`,
           [id],
         )
-        return result.rows[0] || null
+        return Task._mapTask(result.rows[0] || null)
       }
 
       const fields = Object.keys(updateFields)
@@ -182,7 +200,7 @@ class Task {
         values,
       )
 
-      return result.rows[0] || null
+      return Task._mapTask(result.rows[0] || null)
     } catch (error) {
       throw error
     }
@@ -203,9 +221,9 @@ class Task {
       const result = await pool.query(
         `SELECT 
            COUNT(*) as total,
-           COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending,
+           COUNT(CASE WHEN status = 'todo' THEN 1 END) as pending,
            COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress,
-           COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed
+           COUNT(CASE WHEN status = 'done' THEN 1 END) as completed
          FROM tasks
          WHERE user_id = $1`,
         [userId],
